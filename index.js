@@ -1,57 +1,68 @@
-const express = require('express');
+const express = require("express");
+const admin = require("firebase-admin");
+const app = express();
+const port = process.env.PORT || 3000;
+const serviceAccount = require("./a.json");
+
 const bodyParser = require("body-parser");
 var multer = require('multer');
 var upload = multer();
-const app = express();
 app.use(express.json());
-const notificationByToken = require("./notification/notification");
-
 app.use(bodyParser.json()); 
 
 app.use(bodyParser.urlencoded({ extended: true })); 
 
 app.use(upload.array());
 
-function pushNotification(title, body, channel, tokens) {
-    const message = {
-      notification: {
-        title: title,
-        body: body,
-        channel: channel,
-      },
-      tokens: tokens,
-    };
-    const x = notificationByToken.sendPushNotification(message);
-    console.log(x);
-  }
-  
-  app.post("/SendNotification", function(req, res) {
-    const title = req.body.title;
-    const msg = req.body.msg;
-    const channel = req.body.channel;
-    var tokens = req.headers.tokens;
-  
-    console.log("Token is: " + req.headers.tokens);
-    console.dir(req.body);
-  
-    if (!tokens) {
-      tokens = ['AIzaSyAcmuYWGdgwuBx4KPqGqqlEP8-I3xmdFY4'];
-    }
-  
-    if (!title) {
-      console.log("Failed title");
-      res.send("No title");
-      return;
-    }
-    if (!msg) {
-      console.log("Failed content");
-      res.send("No message");
-      return;
-    }
-  
-    const x = pushNotification(title, msg, channel, tokens);
-    if (!x) res.send("success");
-  });
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log("listening on port: ", port));
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
+app.post('/test', function(req,res) {
+    console.dir(req.body);
+    res.send('re');
+})
+
+app.post("/notify", function(req, res)  {
+    console.dir(req.body);
+  const message = {
+    topic: "MyNews",
+    notification: {
+      title: req.body.title,
+      body: req.body.msg,
+    },
+    data: {
+      channel: req.headers.channel,
+    },
+    android: {
+      ttl: 4500,
+      priority: "normal",
+    },
+    apns: {
+      headers: {
+        "apns-priority": "5",
+        "apns-expiration": "1604750400",
+      },
+    },
+  };
+
+  admin
+    .messaging()
+    .send(message)
+    .then((response) => {
+      res.send(`Successfully sent message: ${response}`);
+    })
+    .catch((error) => {
+      res.send(`Error sending message: ${error}`);
+    });
+});
+
+app.listen(port, () => {
+  console.log(
+    `Example app listening at ${port}`
+  );
+});
