@@ -43,7 +43,6 @@ function pushNotification(title, body, channel, tokens) {
       res.send("No title");
       return;
     }
-  
     if (!msg) {
       console.log("Failed content");
       res.send("No message");
