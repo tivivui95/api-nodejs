@@ -16,7 +16,6 @@ app.use(upload.array());
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://<DATABASE_NAME>.firebaseio.com',
 });
 
 app.get("/", (req, res) => {
