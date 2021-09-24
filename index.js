@@ -61,6 +61,41 @@ app.post("/notify", function(req, res)  {
     });
 });
 
+app.post("/notifyToken", function(req, res)  {
+  console.dir(req.body);
+const message = {
+  token: req.headers.token,
+  notification: {
+    title: req.body.title,
+    body: req.body.msg,
+  },
+  data: {
+    channel: req.body.channel,
+  },
+  android: {
+    ttl: 4500,
+    priority: "normal",
+  },
+  apns: {
+    headers: {
+      "apns-priority": "5",
+      "apns-expiration": "1604750400",
+    },
+  },
+};
+
+admin
+  .messaging()
+  .send(message)
+  .then((response) => {
+    res.send(`Successfully sent message: ${response}`);
+  })
+  .catch((error) => {
+    res.send(`Error sending message: ${error}`);
+  });
+});
+
+
 app.listen(port, () => {
   console.log(
     `Example app listening at ${port}`
