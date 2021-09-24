@@ -30,7 +30,7 @@ app.post('/test', function(req,res) {
 app.post("/notify", function(req, res)  {
     console.dir(req.body);
   const message = {
-    topic: req.headers.channel,
+    topic: req.body.channel,
     notification: {
       title: req.body.title,
       body: req.body.msg,
